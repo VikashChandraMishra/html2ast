@@ -1,9 +1,15 @@
 const { Stack, AST } = require('./DS');
+const { extractAttributes } = require('./helpers');
 
 const tagStack = new Stack();
 const contentStack = new Stack();
 
-const startTagRegex = /(<)\w+(>)/i;
+// with attributes
+const startTagRegex = /<[^>/]+>/i;
+
+// without attributes
+// const startTagRegex = /(<)\w+(>)/i;
+
 const endTagRegex = /(<\/)\w+(>)/i;
 
 const root = new AST().root;
@@ -30,7 +36,15 @@ const parse = (html, currentIndex) => {
 
             // deal with start tag encounter
             if (tagStack.items.join('').search(startTagRegex) !== -1) {
-                childIndex = cur.addChild({ tag: tagStack.items.join(''), content: '' });
+
+                const { tag, attributes } = extractAttributes(tagStack.items.join(''));
+
+                childIndex = cur.addChild({
+                    tag: tag,
+                    content: '',
+                    attributes: attributes
+                });
+
                 let temp = cur;
                 cur = cur.children[childIndex];
                 tagStack.clear();
@@ -54,7 +68,7 @@ const parse = (html, currentIndex) => {
 
 const parseWrap = (data, currentIndex) => {
     parse(data, currentIndex);
-    console.log(root.children[0].children)
+    return root;
 }
 
-module.exports = { parse, parseWrap };
+module.exports = { parseWrap };

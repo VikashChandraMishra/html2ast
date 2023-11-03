@@ -21,16 +21,9 @@ const parse = (html, currentIndex) => {
     for (let i = currentIndex; i < html.length; i++) {
 
         // push content
-        if (contentFlag && html[i] !== '<') {
+        if (!contentFlag || html[i] === '<') {
 
-            contentStack.push(html[i]);
-            if (html[i + 1] === '<') {
-                contentFlag = false;
-                cur.data.content += contentStack.items.join('');
-                contentStack.clear();
-            }
-
-        } else {
+            if (html[i] === '<') contentFlag = false;
 
             tagStack.push(html[i]);
 
@@ -60,8 +53,17 @@ const parse = (html, currentIndex) => {
                 contentFlag = true;
                 return (i + 1);
             }
-        }
 
+        } else if (contentFlag) {
+
+            contentStack.push(html[i]);
+            if (html[i + 1] === '<') {
+                contentFlag = false;
+                cur.data.content += contentStack.items.join('');
+                contentStack.clear();
+            }
+
+        }
     }
 
 }
